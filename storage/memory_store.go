@@ -86,3 +86,28 @@ func (s *MemoryStore) GetFeed(userID uuid.UUID) []models.Post {
 
 	return feed
 }
+
+// follow relationship
+func (s *MemoryStore) AddRelationship(followerID, followeeID uuid.UUID) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	s.relationships[followerID] = append(s.relationships[followerID], followeeID)
+	user, exists := s.users[followerID]
+	if exists {
+		user.Followers[followeeID] = true
+		s.users[followerID] = user
+	}
+}
+
+func (s *MemoryStore) GetFollowees(followerID uuid.UUID) []uuid.UUID {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	followees, exists := s.relationships[followerID]
+	if !exists {
+		return []uuid.UUID{}
+	}
+
+	return followees
+}
