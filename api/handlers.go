@@ -55,10 +55,10 @@ func (h *Handler) Follow(w http.ResponseWriter, r *http.Request) {
 	}
 
 	followeeID, err := uuid.Parse(req.FolloweeID)
-    if err != nil {
-        http.Error(w, "Invalid followee ID", http.StatusBadRequest)
-        return
-    }
+	if err != nil {
+		http.Error(w, "Invalid followee ID", http.StatusBadRequest)
+		return
+	}
 
 	if err := h.userService.Follow(followerID, followeeID); err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -66,4 +66,30 @@ func (h *Handler) Follow(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusOK)
+}
+
+func (h *Handler) CreatePost(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		UserID  string `json:"user_id"`
+		Content string `json:"content"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
+
+	userId, err :=uuid.Parse(req.UserID)
+	if err != nil {
+		http.Error(w, "Invalid user ID", http.StatusBadRequest)
+        return
+	}
+
+	post, err := h.feedService.CreatePost(userId, req.Content)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+        return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(post)
 }
