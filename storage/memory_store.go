@@ -51,7 +51,7 @@ func (s *MemoryStore) AddPost(post models.Post) {
 
 func (s *MemoryStore) GetPostsByUser(userID uuid.UUID) []models.Post {
 	s.mu.RLock()
-	defer s.mu.RUnlock()  
+	defer s.mu.RUnlock()
 
 	var posts []models.Post
 	for _, post := range s.posts {
@@ -61,4 +61,28 @@ func (s *MemoryStore) GetPostsByUser(userID uuid.UUID) []models.Post {
 	}
 
 	return posts
+}
+
+// fan out write- adds a post to user's feed
+func (s *MemoryStore) AddToFeed(userID, postId uuid.UUID) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	post, exists := s.posts[postId]
+	if exists {
+		s.feeds[userID] = append(s.feeds[userID], post)
+	}
+}
+
+// retrivein a user computed feed
+func (s *MemoryStore) GetFeed(userID uuid.UUID) []models.Post {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+
+	feed, exists := s.feeds[userID]
+	if !exists {
+		return []models.Post{}
+	}
+
+	return feed
 }
