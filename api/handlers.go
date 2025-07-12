@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/Adit0507/news-feed-system/services"
+	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
 )
 
@@ -78,18 +79,36 @@ func (h *Handler) CreatePost(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userId, err :=uuid.Parse(req.UserID)
+	userId, err := uuid.Parse(req.UserID)
 	if err != nil {
 		http.Error(w, "Invalid user ID", http.StatusBadRequest)
-        return
+		return
 	}
 
 	post, err := h.feedService.CreatePost(userId, req.Content)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(post)
+}
+
+func (h *Handler) GetFeed(w http.ResponseWriter, r *http.Request) {
+	userIDStr := chi.URLParam(r, "userID")
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		http.Error(w, "Invalid user ID", http.StatusBadRequest)
+		return
+	}
+
+	feed, err := h.feedService.GetFeed(userID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(feed)
 }
