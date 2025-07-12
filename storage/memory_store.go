@@ -33,4 +33,32 @@ func (s *MemoryStore) AddUser(user models.User) {
 	s.users[user.ID] = user
 }
 
+// retrieves user by ID
+func (s *MemoryStore) GetUser(userID uuid.UUID) (models.User, bool) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
 
+	user, exists := s.users[userID]
+	return user, exists
+}
+
+func (s *MemoryStore) AddPost(post models.Post) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	s.posts[post.ID] = post
+}
+
+func (s *MemoryStore) GetPostsByUser(userID uuid.UUID) []models.Post {
+	s.mu.RLock()
+	defer s.mu.RUnlock()  
+
+	var posts []models.Post
+	for _, post := range s.posts {
+		if post.UserID == userID {
+			posts = append(posts, post)
+		}
+	}
+
+	return posts
+}
