@@ -86,8 +86,8 @@ curl -X POST -H "Content-Type: application/json" -d '{"user_id":"624e9ed7-09b4-4
 ````````````````````````
 curl http://localhost:8080/feed/a9fbf403-3a8e-4165-9918-06033647cfde
 ````````````````````````
-<b>Output: </b>
 <img src="./assets/aditya-feed.png" />
 
-
-Made with curiosity 💡
+<br />
+<br />
+<b>Made with curiosity 💡</b>
