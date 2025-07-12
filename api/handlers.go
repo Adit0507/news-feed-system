@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/Adit0507/news-feed-system/services"
+	"github.com/google/uuid"
 )
 
 type Handler struct {
@@ -22,7 +23,7 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 		Username string `json:"username"`
 	}
 
-	if err := json.NewDecoder(r.Body).Decode(&req); err !=nil {
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid request", http.StatusBadRequest)
 		return
 	}
@@ -35,4 +36,34 @@ func (h *Handler) CreateUser(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(user)
+}
+
+func (h *Handler) Follow(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		FollowerID string `json:"follower_id"`
+		FolloweeID string `json:"followee_id"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "Invalid request", http.StatusBadRequest)
+		return
+	}
+
+	followerID, err := uuid.Parse(req.FollowerID)
+	if err != nil {
+		http.Error(w, "Invalid follower ID", http.StatusBadRequest)
+		return
+	}
+
+	followeeID, err := uuid.Parse(req.FolloweeID)
+    if err != nil {
+        http.Error(w, "Invalid followee ID", http.StatusBadRequest)
+        return
+    }
+
+	if err := h.userService.Follow(followerID, followeeID); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }
